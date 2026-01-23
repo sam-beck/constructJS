@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<body>
+    <script src="../src/construct.js"></script>
+    <script>
+        const constructApp = createConstructApp();
+        constructApp.setToRoot({ justifyContent: 'center', alignItems: 'center' });
+
+        constructApp.addStyle('.testStyle', {
+            padding: "8px 16px",
+            border: "none",
+            fontSize: "15px",
+            cursor: "pointer",
+            backgroundColor: 'red',
+            focus: {
+                backgroundColor: 'lime !important',
+            }
+        });
+        constructApp.addStyleToCSS('.testStyle');
+        constructApp.setToStyle('.testStyle', {
+            border: '10px solid black',
+        });
+
+        constructApp.addStyle('#btn', {
+            transition: '0.25s ease-in-out',
+            focus: {
+                transform: 'scale(2)',
+            },
+        });
+        constructApp.addStyleToCSS('#btn');
+
+        const counter = constructApp.addState('counter', 0);
+        counter.addListener((value) => { console.log('Counter state: '+ value) });
+
+        function click_event(event) {
+            counter.set(counter.get() + 1);
+            text.innerHTML = 'Presses: '+counter.get();
+        }
+
+        function reset_event(event) {
+            counter.set(0);
+            text.innerHTML = 'Hello!';
+        }
+
+        const btn = constructApp.create(
+            'button',
+            {
+                events: { click: click_event, blur: reset_event},
+                style: ['.testStyle', { backgroundColor: 'pink', width: '20%', height: '10%' }]
+            },
+            'Press Me', 'btn'
+        );
+        
+        const text = constructApp.create(
+            'div',
+            {
+                style: ['.testStyle', { backgroundColor: 'white', margin: '5px', border: '2px solid red' }]
+            },
+            'Hello!', 'text'
+        );
+
+        constructApp.appendChild(btn);
+        btn.appendChild(text);
+
+    </script>
+</body>
+
+</html>
