@@ -1,5 +1,5 @@
 # constructJS
-ConstructJS is a lightweight JavaScript library enabling website creation using nothing but JavaScript. Styles, functionality, states and content is developed programmatically within JavaScript and exported to a standalone output HTML file for deployment. 
+ConstructJS is a lightweight JavaScript library enabling website creation using nothing but JavaScript. Styles, functionality, states and content is developed programmatically within JavaScript and is exported to a standalone output HTML file for deployment. 
 
 Currently a work in progress, ConstructJS includes **HTML event handling, stylesheet creation, a state and listener function system and basic DOM element creation (using DOM heirarchy)** 
 
