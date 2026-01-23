@@ -8,19 +8,139 @@ Currently a work in progress, ConstructJS includes **HTML event handling, styles
 ```html
 <script src="https://sam-beck.github.io/constructJS/src/construct.js"></script>
 ```
+
 ## Quickstart
-### 1. Create a HTML working document
-This serves as the interface between the library and your website to be created. A **simplistic template** is given below:
+To start using the library, create a new HTML working document for creating the website.
+
+### 1. Boilerplate HTML working document
+This interfaces with the library to generate the final website. Note that a **body** is required in order for the library to interface correctly. A **minimal template** is given below:
 ```html
 <!DOCTYPE html>
+<body>
     <script src="https://sam-beck.github.io/constructJS/src/construct.js"></script>
-        <!-- Add a createConstructApp intializer here and start creating your website! -->
+    <script>
+        const constructApp = createConstructApp('Insert page title here');
+        // Start website construction here 
     </script>
+</body>
+</html>
+```
+The **createConstructApp() object** can be used to create elements and configure the website. When the page is run, the HTML output of this document will now include additional features and HTML elements as well as the main website container, **constructJSRoot**:
+```html
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insert page title here</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0px 0px;
+            overflow: hidden;
+        }
+    </style>
+    <style>
+        .constructJSRoot {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="constructJSRoot"></div>
+    <script src="https://sam-beck.github.io/constructJS/src/construct.js"></script>
+    <script>
+        const constructApp = createConstructApp('Insert page title here');
+        // Start website construction here 
+    </script>
+</body>
+</html>
 ```
 
-### 2. Adding a constructApp
-Add the constructJS initialiser to interact with the library features:
+### 2. Configuration of the main website container 
+The constructJS initialiser is used to interact with the library features:
 ```javascript
-const constructApp = createConstructApp('insert page title here');
+const constructApp = createConstructApp('Insert page title here');
 ```
-The **createConstructApp() object** can be used to create elements and configure the website.
+To configure the main container **constructJSRoot** (where all constructJS elements will reside), it can be accessed using the constructJS stylesheet system to directly alter its CSS class. **Note** that each CSS property is converted to camelCase instead of kebab-case with dashes to split keywords:
+```javascript
+constructApp.setToRoot({ justifyContent: 'center', alignItems: 'center' /* Insert any other properties here */});
+```
+**Note** that by default, the root element is a *flexbox* as large as the viewport. This can be configured as shown above.
+
+### 3. Creating a new constructJS style
+To create a stylesheet (for elements of specific tags, classes and IDs), the **createConstructApp() object** can be used:
+```javascript
+// name -> tag names, .name -> classes, #name -> IDs
+constructApp.addStyle('.class_style_name_here',{
+    padding: '8px',
+    border: 'none',
+    /* Add other properties here */
+});
+```
+This style is now a *relative* style, meaning it will become apart of every element's style component. However, typically it is intended to create a style that is reused, so to append this to a stylesheet, the following is called:
+```javascript
+constructApp.addStyleToCSS('.class_style_name_here');
+```
+Each style can be changed using the **setToStyle** and **addToStyle** methods:
+```javascript
+constructApp.setToStyle('.class_style_name_here', {border: '10px solid black'}); // Overwrites this property completely
+constructApp.addToStyle('.class_style_name_here', {padding: '16px'}); // Adds to this property, resulting in padding: 8px 16px
+```
+
+### 4. Creating and configuring an element
+Elements are created using the **createConstructApp() object**, with a similar syntax to style creation:
+```javascript
+/*
+Params :
+tagName - tagName of the element to create
+configuration (object) - contains DOM element attributes, events and style
+children - a string (text) or DOM elements that are to be appended to this element
+definition - the variable definition of this element, only needed if it is to be referenced elsewhere in events or exported code
+
+Return : 
+The resulting DOM element
+*/
+const btn = constructApp.create('button',
+    {
+        attributes: {id : 'button_ID'},
+        events: { click:(event)=>{console.log('I was pressed!')}},
+        style: ['.class_style_name_here', { backgroundColor:'pink', width:'20%', height:'10%' }]
+    },
+    'Press Me', 
+    'btn');
+```
+Events can also be references to functions, however they MUST be functions. To append the newly created element to the page, either append to a previously created element using **element.appendChild()** or the main container element using the **createConstructApp() object**:
+```javascript
+constructApp.appendChild(btn);
+```
+
+### 5. States
+ConstructJS supports state objects to listen to state changes, useful for counters that trigger on user events. Below displays the creation and usage of a **counter** state:
+```javascript
+// Create the state and set it to 0, its name should be the same as its parameter name
+const counter = constructApp.addState('counter', 0);
+// Add a listener that is called every single time counter changes
+counter.addListener((value) => { console.log('Counter state: '+ value) });
+counter.set(2); // Will results in Counter state: 2 being logged to the console
+```
+
+### 6. Exporting the standalone HTML document
+Once your website is complete, the following can be called to create and download the standalone document:
+```javascript
+/*
+(Optional) params:
+download = true - if the export is to be downloaded or not
+downloadTitle = null - configure the title of the file output, defaults to the page title 
+
+Return :
+string of the HTML file
+*/
+constructApp.export();
+```

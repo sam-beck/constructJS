@@ -169,6 +169,10 @@ function createStyleMap() {
 }
 
 function createConstructApp(title = 'ConstructJS Page') {
+    if(document.body == null){
+        logError('Body of HTML is missing');
+        return null;
+    }
     // Head init
     const charSet = document.createElement('meta');
     charSet.setAttribute('charset', 'UTF-8');
@@ -223,6 +227,9 @@ function createConstructApp(title = 'ConstructJS Page') {
         },
         setToStyle: (name, object) => {
             configuration.styles.addToStyle(name, object, true);
+        },
+        addToRoot: (object) => {
+            configuration.styles.addToStyle('.constructJSRoot', object);
         },
         setToRoot: (object) => {
             configuration.styles.addToStyle('.constructJSRoot', object, true);
@@ -308,7 +315,6 @@ function createConstructApp(title = 'ConstructJS Page') {
                     other_styles.push(configValue);
                 }
             }
-
             const other_stylesObj = configuration.styles.processStyle(other_styles);
             for (const val in other_stylesObj) {
                 if (typeof other_stylesObj[val] == 'object') {
@@ -317,7 +323,6 @@ function createConstructApp(title = 'ConstructJS Page') {
                 }
             }
             Object.assign(element.style, other_stylesObj);
-
             if (Array.isArray(children)) {
                 for (const child of children) {
                     element.appendChild(child);
@@ -345,11 +350,9 @@ function createConstructApp(title = 'ConstructJS Page') {
             for (const styleSheet of configuration.styles.getCssStyles().values()) result += styleSheet.innerHTML;
             result += '</style>';
             result += '</head>';
-
             // Export element tree from rootElement
             result += '<body>';
-
-            // Function storage for addition to <script> element
+            // Function (events and state listeners) storage for addition to <script> element
             let functionIDs = 0;
             const functionSet = new Set();
             const functionIDMap = new WeakMap();
@@ -360,15 +363,10 @@ function createConstructApp(title = 'ConstructJS Page') {
                 }
                 return functionIDMap.get(func);
             }
-
-            // decompose each, getting the events and setting onto the elements...
+            // decompose each, getting the events and setting onto the elements, appending each event function progressively
             function parseElementText(element) {
                 const tagName = element.tagName.toLowerCase();
                 result += element.outerHTML.slice(0, element.outerHTML.indexOf('>'));
-                /*
-                need element's:
-                - events -> eventListeners -> set then result+='on'+key+'=()=>{'+event here+'}'
-                */
                 if (element.eventListeners != null) {
                     for (const [key, value] of Object.entries(element.eventListeners)) {
                         // value
@@ -442,14 +440,11 @@ function createConstructApp(title = 'ConstructJS Page') {
                 const blob = new Blob([result], { type: 'text/html' });
                 const blobURL = URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.href = blobURL;
-                a.style.display = 'none';
+                a.href = blobURL; a.style.display = 'none';
                 a.download = downloadTitle + '.html';
-                document.body.appendChild(a);
-                a.click();
+                document.body.appendChild(a); a.click();
                 // Remove the anchor element and the blob URL
-                document.body.removeChild(a);
-                URL.revokeObjectURL(blobURL);
+                document.body.removeChild(a); URL.revokeObjectURL(blobURL);
             }
             return result;
         }
