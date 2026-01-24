@@ -185,7 +185,6 @@ function createConstructApp(title = 'ConstructJS Page') {
     const titleElement = document.createElement('title');
     titleElement.textContent = title;
     document.head.appendChild(titleElement);
-
     // Default class for constructJS element container
     const rootClass = document.createElement('style');
     rootClass.textContent = '*,*::before,*::after {box-sizing:border-box;}body{margin:0px 0px;overflow:hidden;}';
@@ -195,20 +194,22 @@ function createConstructApp(title = 'ConstructJS Page') {
         states: new Map(),
         events: createEventHandler(),
         styles: createStyleMap(),
-        elementNames: new Set()
+        elementNames: new Set(),
+        init: null
     }
 
     // Root class definition, configurable via configuration.styles
     configuration.styles.addStyle('.constructJSRoot', { display: 'flex', width: '100vw', height: '100vh' });
     configuration.styles.styleToCSS('.constructJSRoot');
-
     // ConstructJS root element
     const rootElement = document.createElement('div');
     rootElement.classList.add('constructJSRoot');
     document.body.appendChild(rootElement);
     configuration.root = rootElement;
-
+    
     return {
+        init: () => {if(configuration.init != null)configuration.init();},
+        setInit: (func) => {configuration.init = func;},
         setTitle: (titleName) => {titleElement.textContent = titleName;},
         getRootClass: () => rootClass,
         getRoot: () => rootElement,
@@ -330,9 +331,7 @@ function createConstructApp(title = 'ConstructJS Page') {
             } else {
                 element.textContent = children;
             }
-
             configuration.events.trigger("create", element);
-
             return element;
         },
         export: (download = true, downloadTitle = null) => {
@@ -416,20 +415,33 @@ function createConstructApp(title = 'ConstructJS Page') {
                     intermediate_result += key + '.set=(val)=>{' + key + '.value=val;' + listenerStrings + '};';
                 }
             }
+            // A function for getting the body of a defined method that is stringified
+            function getTrimmedBody(functionString, startIndex){
+                // Gets the function body, stripping starting and ending parentheses
+                const functionBody = functionString.slice(startIndex, functionString[functionString.length - 1] == '}' ? functionString.length - 1 : functionString.length).trim();
+                // Finally, trims off the start and ending whitespace that JS automatically does for formatting in some cases
+                return functionBody.split('\n').map(line => line.trim()).join(' ');
+            }
             // Now define each and every function to be used, append this to result
             for (const ID of functionSet) {
                 const functionString = ID.toString();
                 let startIndex = functionString.indexOf(')');
                 const parameters = functionString.slice(functionString.indexOf('(') + 1, startIndex++);
                 while (functionString[startIndex] == '{' || functionString[startIndex] == '=' || functionString[startIndex] == '>' || functionString[startIndex] == ' ') startIndex++;
-                // Gets the function body, stripping starting and ending parentheses and function definers
-                const functionBody = functionString.slice(startIndex, functionString[functionString.length - 1] == '}' ? functionString.length - 1 : functionString.length);
-                // Finally, trims off the start and ending whitespace that JS automatically does for formatting in some cases
-                const trimmedBody = functionBody.split('\n').map(line => line.trim()).join(' ');
-                result += 'const constructJSMethod' + functionIDMap.get(ID) + '=(' + parameters + ')=>{' + trimmedBody + '};';
+                result += 'const constructJSMethod' + functionIDMap.get(ID) + '=(' + parameters + ')=>{' + getTrimmedBody(functionString,startIndex) + '};';
             }
-            // Add the state definitions last
+            // Add the state definitions afterwards
             result += intermediate_result;
+            // Add the initializer function (if provided)
+            if(configuration.init != null){
+                if(typeof configuration.init != 'function')logError('Initalizer function is not a function.');
+                else{
+                    const functionString = configuration.init.toString();
+                    let startIndex = functionString.indexOf(')'); startIndex++;
+                    while (functionString[startIndex] == '{' || functionString[startIndex] == '=' || functionString[startIndex] == '>' || functionString[startIndex] == ' ') startIndex++;
+                    result += 'window.onload=()=>{'+getTrimmedBody(functionString,startIndex)+'};';
+                }
+            }
             result += '<';
             result += '/script>';
             result += '</body>';

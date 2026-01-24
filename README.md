@@ -25,7 +25,7 @@ This interfaces with the library to generate the final website. Note that a **bo
 </body>
 </html>
 ```
-The **createConstructApp() object** can be used to create elements and configure the website. When the page is run, the HTML output of this document will now include additional features and HTML elements as well as the main website container, **constructJSRoot**:
+The **createConstructApp() object** (defined as constructApp here ) can be used to create elements and configure the website. When the page is run, the HTML output of this document will now include additional features and HTML elements as well as the main website container, **constructJSRoot**:
 ```html
 <!DOCTYPE html>
 <head>
@@ -131,12 +131,20 @@ counter.addListener((value) => { console.log('Counter state: '+ value) });
 counter.set(2); // Will results in Counter state: 2 being logged to the console
 ```
 
-### 6. Exporting the standalone HTML document
+### 6. Initalizer function
+In some cases, initalization is required of variables or other logic once the page has completely loaded. Such a method can be added using the **createConstructApp() object**:
+```javascript
+constructApp.setInit(()=>{console.log('Page is loaded!')});
+// Test the initalizer, do not need this when exporting the final website
+constructApp.init();
+```  
+
+### 7. Exporting the standalone HTML document
 Once your website is complete, the following can be called to create and download the standalone document:
 ```javascript
 /*
 (Optional) params:
-download = true - if the export is to be downloaded or not
+download = true - if the export is to be downloaded or not (true = yes, false = no)
 downloadTitle = null - configure the title of the file output, defaults to the page title 
 
 Return :
