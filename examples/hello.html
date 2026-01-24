@@ -62,9 +62,9 @@
         constructApp.appendChild(btn);
         btn.appendChild(text);
 
-        constructApp.setInit(()=>{console.log('Page is loaded!')});
+        constructApp.setOnload(()=>{console.log('Page is loaded!')});
         // Test the initalizer, do not need this when exporting the final website
-        constructApp.init();
+        constructApp.onload();
     </script>
 </body>
 

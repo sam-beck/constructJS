@@ -195,7 +195,7 @@ function createConstructApp(title = 'ConstructJS Page') {
         events: createEventHandler(),
         styles: createStyleMap(),
         elementNames: new Set(),
-        init: null
+        onload: null
     }
 
     // Root class definition, configurable via configuration.styles
@@ -208,8 +208,8 @@ function createConstructApp(title = 'ConstructJS Page') {
     configuration.root = rootElement;
     
     return {
-        init: () => {if(configuration.init != null)configuration.init();},
-        setInit: (func) => {configuration.init = func;},
+        onload: () => {if(configuration.onload != null)configuration.onload();},
+        setOnload: (func) => {configuration.onload = func;},
         setTitle: (titleName) => {titleElement.textContent = titleName;},
         getRootClass: () => rootClass,
         getRoot: () => rootElement,

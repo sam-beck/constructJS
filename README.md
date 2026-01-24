@@ -131,13 +131,14 @@ counter.addListener((value) => { console.log('Counter state: '+ value) });
 counter.set(2); // Will results in Counter state: 2 being logged to the console
 ```
 
-### 6. Initalizer function
+### 6. Page load initalizer method
 In some cases, initalization is required of variables or other logic once the page has completely loaded. Such a method can be added using the **createConstructApp() object**:
 ```javascript
-constructApp.setInit(()=>{console.log('Page is loaded!')});
+constructApp.setOnload(()=>{console.log('Page is loaded!')});
 // Test the initalizer, do not need this when exporting the final website
-constructApp.init();
+constructApp.onload();
 ```  
+**Note** that the exported website calls this using **window.onload** meaning it will be called as soon as the page has completely loaded.
 
 ### 7. Exporting the standalone HTML document
 Once your website is complete, the following can be called to create and download the standalone document:
