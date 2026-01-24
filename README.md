@@ -8,6 +8,7 @@ Currently a work in progress, ConstructJS includes **HTML event handling, styles
 ```html
 <script src="https://sam-beck.github.io/constructJS/src/construct.js"></script>
 ```
+See [examples](#examples) for basic implementations of library features and styling.
 
 ## Quickstart
 To start using the library, create a new HTML working document for creating the website.
@@ -25,7 +26,7 @@ This interfaces with the library to generate the final website. Note that a **bo
 </body>
 </html>
 ```
-The **createConstructApp() object** (defined as constructApp here ) can be used to create elements and configure the website. When the page is run, the HTML output of this document will now include additional features and HTML elements as well as the main website container, **constructJSRoot**:
+The **createConstructApp() object** (defined as **constructApp** here) can be used to create elements and configure the website. When the page is run, the HTML output of this document will now include additional features and HTML elements as well as the main website container, **constructJSRoot**:
 ```html
 <!DOCTYPE html>
 <head>
@@ -108,15 +109,15 @@ Return :
 The resulting DOM element
 */
 const btn = constructApp.create('button',
-    {
-        attributes: {id : 'button_ID'},
-        events: { click:(event)=>{console.log('I was pressed!')}},
-        style: ['.class_style_name_here', { backgroundColor:'pink', width:'20%', height:'10%' }]
-    },
-    'Press Me', 
-    'btn');
+        {
+            attributes: { id: 'button_ID' },
+            events: { click: (event) => { console.log('I was pressed!') } },
+            style: ['.class_style_name_here', { backgroundColor: 'pink', width: '20%', height: '10%' }]
+        },
+        'Press Me',
+        'btn');
 ```
-Events can also be references to functions, however they MUST be functions. To append the newly created element to the page, either append to a previously created element using **element.appendChild()** or the main container element using the **createConstructApp() object**:
+Events can also be references to functions, however they MUST be functions. To append the newly created element to the page, either append to a previously created **element** using **element.appendChild()** or the main container element using the **createConstructApp() object**:
 ```javascript
 constructApp.appendChild(btn);
 ```
@@ -128,7 +129,7 @@ ConstructJS supports state objects to listen to state changes, useful for counte
 const counter = constructApp.addState('counter', 0);
 // Add a listener that is called every single time counter changes
 counter.addListener((value) => { console.log('Counter state: '+ value) });
-counter.set(2); // Will results in Counter state: 2 being logged to the console
+counter.set(2); // counter.get() = 2 and triggers listeners -> console: Counter state: 2 
 ```
 
 ### 6. Page load initalizer method
@@ -153,3 +154,7 @@ string of the HTML file
 */
 constructApp.export();
 ```
+
+## Examples
+### [hello.html](examples/hello.html)
+Button usage, transitions and child inheritance along with state and event handling for click events
