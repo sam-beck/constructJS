@@ -156,5 +156,11 @@ constructApp.export();
 ```
 
 ## Examples
+Each example displays the pre-export file used to create the HTML document and can be exported using the following command in the console:
+```javascript
+constructApp.export(); // Downloads the HTML document locally
+```
 ### [hello.html](examples/hello.html)
-Button usage, transitions and child inheritance along with state and event handling for click events
+* Button creation and implementation
+* Transition styling for user events 
+* State and event handling for events
