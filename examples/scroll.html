@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<body>
+    <script src="../src/construct.js"></script>
+    <script>
+        // Init constructJS
+        const constructApp = createConstructApp();
+        constructApp.setToRoot({ justifyContent: 'center', alignItems: 'center' });
+
+        // Scroll container style by ID
+        constructApp.addStyle('#scrollContainer', {
+            overflow: 'hidden',
+            border: '1vh solid white',
+            width: '80%',
+            height: '60%',
+            backgroundColor: 'rgb(200,200,200)',
+            transition: '0.5s ease-in-out',
+            borderRadius:'1vw',
+            cursor:'grab',
+            hover: { borderColor: 'grey' }
+        });
+        constructApp.addStyleToCSS('#scrollContainer');
+
+        // Scroll element class
+        constructApp.addStyle('.scrollElement', {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',     
+            userSelect: 'none',   
+            flexShrink: '0',
+            width: '25%',
+            aspectRatio: '1/1',
+            backgroundColor: 'grey',
+            transition: '0.3s ease-in-out',
+            fontFamily:'consolas',
+            borderRadius:'10%',
+            hover: { transform: 'scale(115%)' }
+        });
+        constructApp.addStyleToCSS('.scrollElement');
+
+        // Scroll state: preserves the translation
+        const scrollAmount = constructApp.addState('scrollAmount', 0);
+        // Focus state: checks if scroll element is in focus
+        const focusState = constructApp.addState('focusState', false);
+        // Define the left and right scroll padding size (5% of the window width)
+        const edgePadding = constructApp.addState('edgePadding', window.innerWidth*0.05);
+        
+        // Move event for scrolling
+        function moveEvent(event) {
+            if (event.buttons == 1 && focusState) {
+                const newPosition = scrollAmount.get() + event.movementX;
+                const spacing = scrollContainer.clientWidth - elementContainer.scrollWidth - edgePadding.get();
+                scrollAmount.set(Math.min(0,Math.max(newPosition,spacing)));
+                elementContainer.style.transform = 'translateX(' + scrollAmount.get() + 'px)';
+            }
+        };
+
+        // Scroll container, acts as the border around the scoll element
+        const scrollContainer = constructApp.create(
+            'div',
+            {
+                events: { mousedown: ()=>{focusState.set(true);scrollContainer.style.cursor='grabbing';}, mouseup: ()=>{focusState.set(false);scrollContainer.style.cursor='grab';}, mouseleave: ()=>{focusState.set(false);}, mousemove: moveEvent },
+                style: ['#scrollContainer']
+            },
+            null, 'scrollContainer'
+        );
+        constructApp.appendChild(scrollContainer);
+
+        // Element container, child of scroll container and houses the elements to scroll
+        const elementContainer = constructApp.create(
+            'div',
+            {
+                style: {
+                    display: 'flex',
+                    width: 'max-content',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flexWrap: 'nowrap',
+                    alignItems: 'center',
+                    gap: '8%',
+                    paddingInline: edgePadding.get()+'px',
+                    transition: 'transform 0.5s ease-in-out',
+                    transform: 'translateX(0px)'
+                }
+            },
+            null, 'elementContainer'
+        );
+        scrollContainer.appendChild(elementContainer);
+
+        // Create 10 elements
+        for(let i=1; i<=10; i++){
+            elementContainer.appendChild(constructApp.create('div', { style: ['.scrollElement'] },'Element '+i));
+        }
+    </script>
+</body>
+
+</html>

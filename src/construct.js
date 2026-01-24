@@ -168,11 +168,21 @@ function createStyleMap() {
     };
 }
 
+function createDependencyList(){
+    const dependencies = new Set();
+    const initializers = new Set();
+    return{
+        getDependencies:()=>dependencies,
+        getInitializers:()=>initializers,
+        addDependency:(src,init)=>{
+            if(typeof src == 'string')dependencies.add(src); 
+            if(typeof init == 'function')initializers.add(init);
+        },
+    };
+}
+
 function createConstructApp(title = 'ConstructJS Page') {
-    if(document.body == null){
-        logError('Body of HTML is missing');
-        return null;
-    }
+    if(document.body == null){logError('Body of HTML is missing'); return null;}
     // Head init
     const charSet = document.createElement('meta');
     charSet.setAttribute('charset', 'UTF-8');
@@ -185,19 +195,18 @@ function createConstructApp(title = 'ConstructJS Page') {
     const titleElement = document.createElement('title');
     titleElement.textContent = title;
     document.head.appendChild(titleElement);
-    // Default class for constructJS element container
-    const rootClass = document.createElement('style');
-    rootClass.textContent = '*,*::before,*::after {box-sizing:border-box;}body{margin:0px 0px;overflow:hidden;}';
-    document.head.appendChild(rootClass);
-
     const configuration = {
+        dependencies: createDependencyList(),
         states: new Map(),
         events: createEventHandler(),
         styles: createStyleMap(),
         elementNames: new Set(),
         onload: null
     }
-
+    // Default class for constructJS element container
+    const rootClass = document.createElement('style');
+    rootClass.textContent = '*,*::before,*::after {box-sizing:border-box;}body{margin:0px 0px;overflow:hidden;}';
+    document.head.appendChild(rootClass);
     // Root class definition, configurable via configuration.styles
     configuration.styles.addStyle('.constructJSRoot', { display: 'flex', width: '100vw', height: '100vh' });
     configuration.styles.styleToCSS('.constructJSRoot');
@@ -206,7 +215,7 @@ function createConstructApp(title = 'ConstructJS Page') {
     rootElement.classList.add('constructJSRoot');
     document.body.appendChild(rootElement);
     configuration.root = rootElement;
-    
+
     return {
         onload: () => {if(configuration.onload != null)configuration.onload();},
         setOnload: (func) => {configuration.onload = func;},
@@ -266,6 +275,7 @@ function createConstructApp(title = 'ConstructJS Page') {
             }
             return null;
         },
+        addDependency: (src,init) => {configuration.dependencies.addDependency(src,init);}, 
         create: (type, config = {}, children = [], name = null) => {
             const element = document.createElement(type);
             if (name != null) {
@@ -341,9 +351,7 @@ function createConstructApp(title = 'ConstructJS Page') {
             else result += '<html>';
             // Export head and merge stylesheets (in order)
             result += '<head>';
-            result += charSet.outerHTML;
-            result += metaElement.outerHTML;
-            result += titleElement.outerHTML;
+            result += charSet.outerHTML; result += metaElement.outerHTML; result += titleElement.outerHTML;
             result += '<style id="constructStyles">';
             result += rootClass.innerHTML;
             for (const styleSheet of configuration.styles.getCssStyles().values()) result += styleSheet.innerHTML;
@@ -394,16 +402,16 @@ function createConstructApp(title = 'ConstructJS Page') {
                 result += '</' + tagName + '>';
             }
             parseElementText(rootElement);
-
-            // script, seperate the tag as parser can interpret as EOF otherwise
-            result += '<';
-            result += 'script>';
+            // Add the dependency sources
+            for(const src of configuration.dependencies.getDependencies()){
+                result += '<'+'script src="'+src+'"></script>';
+            }
+            // main script, seperate the tag as HTML interpreter can view as EOF otherwise
+            result += '<'+'script>';
             // Hold intermediate string to parse and collect all functions first
             let intermediate_result = '';
             // Add in each element definition, add this to intermediate result
-            for (const elementName of configuration.elementNames) {
-                intermediate_result += 'const ' + elementName + '=document.getElementById("' + elementName + '");';
-            }
+            for (const elementName of configuration.elementNames) intermediate_result += 'const ' + elementName + '=document.getElementById("' + elementName + '");';
             // Export the states of the configuration, to be done before defining the functions to get all the functions to be defined
             for (const [key, value] of configuration.states) {
                 intermediate_result += 'const ' + key + '={value:' + value.getInitial() + ',get:()=>' + key + '.value,set:(val)=>{' + key + '.value=val;}};';
@@ -432,6 +440,15 @@ function createConstructApp(title = 'ConstructJS Page') {
             }
             // Add the state definitions afterwards
             result += intermediate_result;
+            // Add dependencies
+            for(const initFunction of configuration.dependencies.getInitializers()){
+                const functionString = initFunction.toString();
+                let startIndex = functionString.indexOf(')'); startIndex++;
+                while (functionString[startIndex] == '{' || functionString[startIndex] == '=' || functionString[startIndex] == '>' || functionString[startIndex] == ' ') startIndex++;
+                const trimmedBody = getTrimmedBody(functionString,startIndex);
+                // Append to script, add semicolon at end if not present
+                result += trimmedBody + (trimmedBody[trimmedBody.length-1] == ';' ? '' : ';');
+            }
             // Add the initializer function (if provided)
             if(configuration.init != null){
                 if(typeof configuration.init != 'function')logError('Initalizer function is not a function.');
@@ -442,8 +459,7 @@ function createConstructApp(title = 'ConstructJS Page') {
                     result += 'window.onload=()=>{'+getTrimmedBody(functionString,startIndex)+'};';
                 }
             }
-            result += '<';
-            result += '/script>';
+            result += '<'+'/script>';
             result += '</body>';
             result += '</html>';
             if (download) {

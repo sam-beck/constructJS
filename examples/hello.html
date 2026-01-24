@@ -3,10 +3,12 @@
 <body>
     <script src="../src/construct.js"></script>
     <script>
+        // Init constructJS
         const constructApp = createConstructApp();
         constructApp.setToRoot({ justifyContent: 'center', alignItems: 'center' });
 
-        constructApp.addStyle('.testStyle', {
+        // Main style class
+        constructApp.addStyle('.mainStyle', {
             padding: "8px 16px",
             border: "none",
             fontSize: "15px",
@@ -16,52 +18,65 @@
                 backgroundColor: 'lime !important',
             }
         });
-        constructApp.addStyleToCSS('.testStyle');
-        constructApp.setToStyle('.testStyle', {
+        constructApp.addStyleToCSS('.mainStyle');
+        
+        // Set new style to previously made style
+        constructApp.setToStyle('.mainStyle', {
             border: '10px solid black',
         });
 
+        // Button style
         constructApp.addStyle('#btn', {
             transition: '0.25s ease-in-out',
             focus: {
+                // On focus will scale upwards
                 transform: 'scale(2)',
             },
         });
         constructApp.addStyleToCSS('#btn');
 
+        // Counter click state
         const counter = constructApp.addState('counter', 0);
+        // Log the counter state when it changes
         counter.addListener((value) => { console.log('Counter state: '+ value) });
 
+        // Click event
         function click_event(event) {
             counter.set(counter.get() + 1);
             text.innerHTML = 'Presses: '+counter.get();
         }
 
+        // Reset click event on unfocus
         function reset_event(event) {
             counter.set(0);
             text.innerHTML = 'Hello!';
         }
 
+        // Button element
         const btn = constructApp.create(
             'button',
             {
-                events: { click: click_event, blur: reset_event, focus: ()=>console.log('hover')},
-                style: ['.testStyle', { backgroundColor: 'pink', width: '20%', height: '10%' }]
+                events: { click: click_event, blur: reset_event, focus:()=>console.log('hover')},
+                style: ['.mainStyle', { backgroundColor: 'pink', width: '40%', height: '20%' }]
             },
             'Press Me', 'btn'
         );
         
+        // Test element
         const text = constructApp.create(
             'div',
             {
-                style: ['.testStyle', { backgroundColor: 'white', margin: '5px', border: '2px solid red' }]
+                style: ['.mainStyle', { backgroundColor: 'white', margin: '5px', border: '2px solid red'}]
             },
             'Hello!', 'text'
         );
 
+        // Append the button element to the page
         constructApp.appendChild(btn);
+        // Append the text element to the button
         btn.appendChild(text);
 
+        // Triggers when the page loads
         constructApp.setOnload(()=>{console.log('Page is loaded!')});
         // Test the initalizer, do not need this when exporting the final website
         constructApp.onload();
