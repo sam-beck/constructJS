@@ -49,7 +49,7 @@
 
         // Move event for scrolling
         function moveEvent(event) {
-            if (event.buttons == 1 && focusState) {
+            if (event.buttons != 0 && focusState) {
                 const newPosition = scrollAmount.get() + event.movementX;
                 const spacing = scrollContainer.clientWidth - elementContainer.scrollWidth - edgePadding.get();
                 scrollAmount.set(Math.min(0, Math.max(newPosition, spacing)));
@@ -61,7 +61,7 @@
         const scrollContainer = constructApp.create(
             'div',
             {
-                events: { mousedown: () => { focusState.set(true); scrollContainer.style.cursor = 'grabbing'; }, mouseup: () => { focusState.set(false); scrollContainer.style.cursor = 'grab'; }, mouseleave: () => { focusState.set(false); }, mousemove: moveEvent },
+                events: { mousedown: () => { focusState.set(true); scrollContainer.style.cursor = 'grabbing'; }, mouseup: () => { focusState.set(false); scrollContainer.style.cursor = 'grab'; }, mousemove: moveEvent },
                 style: ['#scrollContainer']
             },
             null, 'scrollContainer'
