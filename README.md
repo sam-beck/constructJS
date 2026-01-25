@@ -177,5 +177,6 @@ constructApp.export(); // Downloads the HTML document locally
 * State and event handling for events
 ### [scroll.html](examples/scroll.html)
 * Scroll element implementation
+* Usage of [Three.js](https://threejs.org/) graphics library
 * State and event handling for mouse and pointer events
 * Scroll and transform transition styling for user events 
