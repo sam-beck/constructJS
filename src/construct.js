@@ -275,7 +275,13 @@ function createConstructApp(title = 'ConstructJS Page') {
             }
             return null;
         },
-        addDependency: (src,init) => {configuration.dependencies.addDependency(src,init);}, 
+        addDependency: (src,init) => {
+            configuration.dependencies.addDependency(src,init);
+            const scriptElement = document.createElement('script');
+            scriptElement.src = src;
+            document.body.prepend(scriptElement);
+            scriptElement.onload = init;
+        }, 
         create: (type, config = {}, children = [], name = null) => {
             const element = document.createElement(type);
             if (name != null) {
@@ -440,7 +446,7 @@ function createConstructApp(title = 'ConstructJS Page') {
             }
             // Add the state definitions afterwards
             result += intermediate_result;
-            // Add dependencies
+            // Add dependency init functions
             for(const initFunction of configuration.dependencies.getInitializers()){
                 const functionString = initFunction.toString();
                 let startIndex = functionString.indexOf(')'); startIndex++;

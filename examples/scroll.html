@@ -5,7 +5,7 @@
     <script src="../src/construct.js"></script>
     <script>
         // Init constructJS
-        const constructApp = createConstructApp();
+        const constructApp = createConstructApp('ConstructJS: Scroll');
         constructApp.setToRoot({ justifyContent: 'center', alignItems: 'center' });
 
         // Scroll container style by ID
@@ -16,8 +16,8 @@
             height: '60%',
             backgroundColor: 'rgb(200,200,200)',
             transition: '0.5s ease-in-out',
-            borderRadius:'1vw',
-            cursor:'grab',
+            borderRadius: '1vw',
+            cursor: 'grab',
             hover: { borderColor: 'grey' }
         });
         constructApp.addStyleToCSS('#scrollContainer');
@@ -27,15 +27,15 @@
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            overflow: 'hidden',     
-            userSelect: 'none',   
+            overflow: 'hidden',
+            userSelect: 'none',
             flexShrink: '0',
-            width: '25%',
+            width: '15%',
             aspectRatio: '1/1',
             backgroundColor: 'grey',
             transition: '0.3s ease-in-out',
-            fontFamily:'consolas',
-            borderRadius:'10%',
+            fontFamily: 'consolas',
+            borderRadius: '10%',
             hover: { transform: 'scale(115%)' }
         });
         constructApp.addStyleToCSS('.scrollElement');
@@ -45,14 +45,14 @@
         // Focus state: checks if scroll element is in focus
         const focusState = constructApp.addState('focusState', false);
         // Define the left and right scroll padding size (5% of the window width)
-        const edgePadding = constructApp.addState('edgePadding', window.innerWidth*0.05);
-        
+        const edgePadding = constructApp.addState('edgePadding', window.innerWidth * 0.05);
+
         // Move event for scrolling
         function moveEvent(event) {
             if (event.buttons == 1 && focusState) {
                 const newPosition = scrollAmount.get() + event.movementX;
                 const spacing = scrollContainer.clientWidth - elementContainer.scrollWidth - edgePadding.get();
-                scrollAmount.set(Math.min(0,Math.max(newPosition,spacing)));
+                scrollAmount.set(Math.min(0, Math.max(newPosition, spacing)));
                 elementContainer.style.transform = 'translateX(' + scrollAmount.get() + 'px)';
             }
         };
@@ -61,7 +61,7 @@
         const scrollContainer = constructApp.create(
             'div',
             {
-                events: { mousedown: ()=>{focusState.set(true);scrollContainer.style.cursor='grabbing';}, mouseup: ()=>{focusState.set(false);scrollContainer.style.cursor='grab';}, mouseleave: ()=>{focusState.set(false);}, mousemove: moveEvent },
+                events: { mousedown: () => { focusState.set(true); scrollContainer.style.cursor = 'grabbing'; }, mouseup: () => { focusState.set(false); scrollContainer.style.cursor = 'grab'; }, mouseleave: () => { focusState.set(false); }, mousemove: moveEvent },
                 style: ['#scrollContainer']
             },
             null, 'scrollContainer'
@@ -80,8 +80,8 @@
                     flexDirection: 'row',
                     flexWrap: 'nowrap',
                     alignItems: 'center',
-                    gap: '8%',
-                    paddingInline: edgePadding.get()+'px',
+                    gap: edgePadding.get() + 'px',
+                    paddingInline: edgePadding.get() + 'px',
                     transition: 'transform 0.5s ease-in-out',
                     transform: 'translateX(0px)'
                 }
@@ -91,9 +91,48 @@
         scrollContainer.appendChild(elementContainer);
 
         // Create 10 elements
-        for(let i=1; i<=10; i++){
-            elementContainer.appendChild(constructApp.create('div', { style: ['.scrollElement'] },'Element '+i));
+        for (let i = 1; i <= 10; i++) {
+            elementContainer.appendChild(constructApp.create('div', { attributes: { id: 'Element ' + i }, style: ['.scrollElement'] }, 'Element ' + i));
         }
+
+        // Initialise three.js dependency
+        function initThreeJS() {
+            // Add three.js scene to first element
+            const parent = document.getElementById('Element 1'); 
+            parent.innerHTML = '';
+            const pad = edgePadding.get()/2.0;
+            const dimensions = {width:parent.clientWidth+pad,height:parent.clientHeight+pad};
+            
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(80, dimensions.width / dimensions.height, 0.1, 100);
+            const renderer = new THREE.WebGLRenderer({ antialias: false });
+            renderer.setSize(dimensions.width, dimensions.height);
+            parent.appendChild(renderer.domElement);
+
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(3, 3, 3);
+            scene.add(light);
+
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+
+            const geometry = new THREE.TorusGeometry( 1, 0.2, 25, 50 );
+            const material = new THREE.MeshStandardMaterial({ color: 0x0055ff});
+            const cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+            camera.position.z = 2;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                cube.rotation.x += 0.02;
+                cube.rotation.y += 0.01;
+                cube.rotation.z += 0.005;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+        // Add the three.js dependency
+        constructApp.addDependency('https://cdn.jsdelivr.net/npm/three@0.124.0/build/three.js', initThreeJS);
     </script>
 </body>
 

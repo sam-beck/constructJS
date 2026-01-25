@@ -141,7 +141,18 @@ constructApp.onload();
 ```  
 **Note** that the exported website calls this using **window.onload** meaning it will be called as soon as the page has completely loaded.
 
-### 7. Exporting the standalone HTML document
+### 7. Adding dependencies
+Dependencies and external libraries can be added to the page allowing for interactions with the DOM elements and usage within the script of the document:
+```javascript
+function init(){
+    // Put all the dependency script here, can interact with states, events and DOM elements
+}
+// Add a dependency and trigger init when loaded
+constructApp.addDependency('link to dependency here', init);
+```
+The exported webpage runs the initializer function once the page is loaded.
+
+### 8. Exporting the standalone HTML document
 Once your website is complete, the following can be called to create and download the standalone document:
 ```javascript
 /*
@@ -164,3 +175,7 @@ constructApp.export(); // Downloads the HTML document locally
 * Button creation and implementation
 * Transition styling for user events 
 * State and event handling for events
+### [scroll.html](examples/scroll.html)
+* Scroll element implementation
+* State and event handling for mouse and pointer events
+* Scroll and transform transition styling for user events 
