@@ -171,15 +171,13 @@ Each example displays the pre-export file used to create the HTML document and c
 ```javascript
 constructApp.export(); // Downloads the HTML document locally
 ```
-___
 ### [hello.html](examples/hello.html)
 * Button creation and implementation
 * Transition styling for user events 
 * State and event handling for events
-___
+    
 ### [scroll.html](examples/scroll.html)
 * Scroll element implementation
 * Usage of [Three.js](https://threejs.org/) graphics library
 * State and event handling for mouse and pointer events
-* Scroll and transform transition styling for user events 
-___
+* Scroll and transform transition styling for user events
