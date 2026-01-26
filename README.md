@@ -122,7 +122,23 @@ Events can also be references to functions, however they MUST be functions. To a
 constructApp.appendChild(btn);
 ```
 
-### 5. States
+### 5. CSS animations
+To implement a CSS animation into the website (@keyframes), the **createConstructApp() object** can be used to generate a keyframe style, which can be used like a typical CSS animation:
+```javascript
+// Create div element with text 'Hello!' called text
+const text = constructApp.create('div',
+            {style: { backgroundColor: 'white', margin: '5px', border: '2px solid red'}},
+            'Hello!'
+        );
+
+// Create the animation using the createConstructApp() object
+constructApp.createAnimation('animation-text',{'0%':{fontSize:'15px'},'100%':{fontSize:'30px'}});
+
+// Apply the animation to the text DOM object, starts in 1/2 a second and repeats forever, alternating each time, starting forwards
+text.style.animation = 'animation-text 1s ease-in-out 0.5s infinite alternate forwards';
+```
+
+### 6. States
 ConstructJS supports state objects to listen to state changes, useful for counters that trigger on user events. Below displays the creation and usage of a **counter** state:
 ```javascript
 // Create the state and set it to 0, its name should be the same as its parameter name
@@ -132,7 +148,7 @@ counter.addListener((value) => { console.log('Counter state: '+ value) });
 counter.set(2); // counter.get() = 2 and triggers listeners -> console: Counter state: 2 
 ```
 
-### 6. Page load initalizer method
+### 7. Page load initalizer method
 In some cases, initalization is required of variables or other logic once the page has completely loaded. Such a method can be added using the **createConstructApp() object**:
 ```javascript
 constructApp.setOnload(()=>{console.log('Page is loaded!')});
@@ -141,7 +157,7 @@ constructApp.onload();
 ```  
 **Note** that the exported website calls this using **window.onload** meaning it will be called as soon as the page has completely loaded.
 
-### 7. Adding dependencies
+### 8. Adding dependencies
 Dependencies and external libraries can be added to the page allowing for interactions with the DOM elements and usage within the script of the document:
 ```javascript
 function init(){
@@ -152,7 +168,7 @@ constructApp.addDependency('link to dependency here', init);
 ```
 The exported webpage runs the initializer function once the page is loaded.
 
-### 8. Exporting the standalone HTML document
+### 9. Exporting the standalone HTML document
 Once your website is complete, the following can be called to create and download the standalone document:
 ```javascript
 /*
@@ -175,7 +191,8 @@ constructApp.export(); // Downloads the HTML document locally
 * Button creation and implementation
 * Transition styling for user events 
 * State and event handling for events
-    
+* Animations (css @keyframe) example
+
 ### [scroll.html](examples/scroll.html)
 * Scroll element implementation
 * Usage of [Three.js](https://threejs.org/) graphics library

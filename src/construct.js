@@ -55,6 +55,32 @@ function createEventHandler() {
     };
 }
 
+// Checks if is lower and upper for alphabetical chars
+function isLower(char) {
+    return char == char.toLowerCase() && char !== char.toUpperCase();
+}
+function isUpper(char) {
+    return char == char.toUpperCase() && char !== char.toLowerCase();
+}
+
+// converts camelCase to kebab-case
+function camelToKebab(str) {
+    let val = '';
+    val += str[0].toLowerCase();
+    let lower = isLower(str[0]);
+    for (let i = 1; i < str.length; i++) {
+        const char = str[i];
+        if (lower && isUpper(char)) {
+            val += '-' + char.toLowerCase();
+            lower = false;
+        } else {
+            val += char;
+            lower = true;
+        }
+    }
+    return val;
+}
+
 function createStyleMap() {
     const styles = new Map();
     const cssStyles = new Map();
@@ -71,15 +97,7 @@ function createStyleMap() {
         const properties = [];
         for (const key in styleObj) {
             if (typeof styleObj[key] == 'string') {
-                let val = '';
-                for (const char of key) {
-                    if (char == char.toUpperCase() && char !== char.toLowerCase()) {
-                        val += '-' + char.toLowerCase();
-                    } else {
-                        val += char;
-                    }
-                }
-                styleText += val + ':' + styleObj[key] + ';';
+                styleText += camelToKebab(key) + ':' + styleObj[key] + ';';
             } else {
                 properties.push(key);
             }
@@ -89,15 +107,7 @@ function createStyleMap() {
         for (const key of properties) {
             styleText += name + ':' + key + '{';
             for (const sub_key in styleObj[key]) {
-                let val = '';
-                for (const char of sub_key) {
-                    if (char == char.toUpperCase() && char !== char.toLowerCase()) {
-                        val += '-' + char.toLowerCase();
-                    } else {
-                        val += char;
-                    }
-                }
-                styleText += val + ':' + styleObj[key][sub_key] + ';';
+                styleText += camelToKebab(sub_key) + ':' + styleObj[key][sub_key] + ';';
             }
             styleText += '}';
         }
@@ -168,21 +178,54 @@ function createStyleMap() {
     };
 }
 
-function createDependencyList(){
+function createKeyframeMap() {
+    const keyframes = new Map();
+
+    // Updates the keyframe stylesheet
+    const configureStyle = (name) => {
+        if (!keyframes.has(name)) return false;
+        const keyframe = keyframes.get(name);
+        let styleText = '@keyframes ' + name + '{';
+        for (const [key, value] of Object.entries(keyframe.style)) {
+            styleText += key + '{';
+            for (const propertyName in value) {
+                styleText += camelToKebab(propertyName) + ':' + value[propertyName] + ';';
+            }
+            styleText += '}';
+        }
+        keyframe.styleSheet.textContent = styleText + '}';
+        return true;
+    };
+
+    return {
+        getKeyframes: () => keyframes,
+        getKeyframe: (name) => keyframes.get(name),
+        create: (name, config) => {
+            const value = { style: config, styleSheet: document.createElement('style') };
+            keyframes.set(name, value);
+            document.head.appendChild(value.styleSheet);
+            configureStyle(name);
+            return keyframes.get(name);
+        },
+        update: (name) => configureStyle(name)
+    };
+}
+
+function createDependencyList() {
     const dependencies = new Set();
     const initializers = new Set();
-    return{
-        getDependencies:()=>dependencies,
-        getInitializers:()=>initializers,
-        addDependency:(src,init)=>{
-            if(typeof src == 'string')dependencies.add(src); 
-            if(typeof init == 'function')initializers.add(init);
+    return {
+        getDependencies: () => dependencies,
+        getInitializers: () => initializers,
+        addDependency: (src, init) => {
+            if (typeof src == 'string') dependencies.add(src);
+            if (typeof init == 'function') initializers.add(init);
         },
     };
 }
 
 function createConstructApp(title = 'ConstructJS Page') {
-    if(document.body == null){logError('Body of HTML is missing'); return null;}
+    if (document.body == null) { logError('Body of HTML is missing'); return null; }
     // Head init
     const charSet = document.createElement('meta');
     charSet.setAttribute('charset', 'UTF-8');
@@ -200,12 +243,13 @@ function createConstructApp(title = 'ConstructJS Page') {
         states: new Map(),
         events: createEventHandler(),
         styles: createStyleMap(),
+        keyframes: createKeyframeMap(),
         elementNames: new Set(),
         onload: null
     }
     // Default class for constructJS element container
     const rootClass = document.createElement('style');
-    rootClass.textContent = '*,*::before,*::after {box-sizing:border-box;}body{margin:0px 0px;overflow:hidden;}';
+    rootClass.textContent = '*,*::before,*::after{box-sizing:border-box;}body{margin:0px 0px;overflow:hidden;}';
     document.head.appendChild(rootClass);
     // Root class definition, configurable via configuration.styles
     configuration.styles.addStyle('.constructJSRoot', { display: 'flex', width: '100vw', height: '100vh' });
@@ -217,9 +261,9 @@ function createConstructApp(title = 'ConstructJS Page') {
     configuration.root = rootElement;
 
     return {
-        onload: () => {if(configuration.onload != null)configuration.onload();},
-        setOnload: (func) => {configuration.onload = func;},
-        setTitle: (titleName) => {titleElement.textContent = titleName;},
+        onload: () => { if (configuration.onload != null) configuration.onload(); },
+        setOnload: (func) => { configuration.onload = func; },
+        setTitle: (titleName) => { titleElement.textContent = titleName; },
         getRootClass: () => rootClass,
         getRoot: () => rootElement,
         appendChild: (element) => rootElement.appendChild(element),
@@ -229,6 +273,9 @@ function createConstructApp(title = 'ConstructJS Page') {
             configuration.states.set(name, state);
             return state;
         },
+        createAnimation: (name, config) =>  configuration.keyframes.create(name, config),
+        getAnimations: () => configuration.keyframes.getKeyframes(),
+        getAnimation: (name) => configuration.keyframes.getKeyframe(name),
         addStyle: (name, object) => {
             configuration.styles.addStyle(name, object);
         },
@@ -275,13 +322,13 @@ function createConstructApp(title = 'ConstructJS Page') {
             }
             return null;
         },
-        addDependency: (src,init) => {
-            configuration.dependencies.addDependency(src,init);
+        addDependency: (src, init) => {
+            configuration.dependencies.addDependency(src, init);
             const scriptElement = document.createElement('script');
             scriptElement.src = src;
             document.body.prepend(scriptElement);
             scriptElement.onload = init;
-        }, 
+        },
         create: (type, config = {}, children = [], name = null) => {
             const element = document.createElement(type);
             if (name != null) {
@@ -358,6 +405,10 @@ function createConstructApp(title = 'ConstructJS Page') {
             // Export head and merge stylesheets (in order)
             result += '<head>';
             result += charSet.outerHTML; result += metaElement.outerHTML; result += titleElement.outerHTML;
+            result += '<style id="constructAnimations">';
+            // Add Keyframes
+            for (const keyFrame of configuration.keyframes.getKeyframes().values())result += keyFrame.styleSheet.innerHTML;
+            result += '</style>'
             result += '<style id="constructStyles">';
             result += rootClass.innerHTML;
             for (const styleSheet of configuration.styles.getCssStyles().values()) result += styleSheet.innerHTML;
@@ -409,11 +460,11 @@ function createConstructApp(title = 'ConstructJS Page') {
             }
             parseElementText(rootElement);
             // Add the dependency sources
-            for(const src of configuration.dependencies.getDependencies()){
-                result += '<'+'script src="'+src+'"></script>';
+            for (const src of configuration.dependencies.getDependencies()) {
+                result += '<' + 'script src="' + src + '"></script>';
             }
             // main script, seperate the tag as HTML interpreter can view as EOF otherwise
-            result += '<'+'script>';
+            result += '<' + 'script>';
             // Hold intermediate string to parse and collect all functions first
             let intermediate_result = '';
             // Add in each element definition, add this to intermediate result
@@ -430,7 +481,7 @@ function createConstructApp(title = 'ConstructJS Page') {
                 }
             }
             // A function for getting the body of a defined method that is stringified
-            function getTrimmedBody(functionString, startIndex){
+            function getTrimmedBody(functionString, startIndex) {
                 // Gets the function body, stripping starting and ending parentheses
                 const functionBody = functionString.slice(startIndex, functionString[functionString.length - 1] == '}' ? functionString.length - 1 : functionString.length).trim();
                 // Finally, trims off the start and ending whitespace that JS automatically does for formatting in some cases
@@ -442,30 +493,30 @@ function createConstructApp(title = 'ConstructJS Page') {
                 let startIndex = functionString.indexOf(')');
                 const parameters = functionString.slice(functionString.indexOf('(') + 1, startIndex++);
                 while (functionString[startIndex] == '{' || functionString[startIndex] == '=' || functionString[startIndex] == '>' || functionString[startIndex] == ' ') startIndex++;
-                result += 'const constructJSMethod' + functionIDMap.get(ID) + '=(' + parameters + ')=>{' + getTrimmedBody(functionString,startIndex) + '};';
+                result += 'const constructJSMethod' + functionIDMap.get(ID) + '=(' + parameters + ')=>{' + getTrimmedBody(functionString, startIndex) + '};';
             }
             // Add the state definitions afterwards
             result += intermediate_result;
             // Add dependency init functions
-            for(const initFunction of configuration.dependencies.getInitializers()){
+            for (const initFunction of configuration.dependencies.getInitializers()) {
                 const functionString = initFunction.toString();
                 let startIndex = functionString.indexOf(')'); startIndex++;
                 while (functionString[startIndex] == '{' || functionString[startIndex] == '=' || functionString[startIndex] == '>' || functionString[startIndex] == ' ') startIndex++;
-                const trimmedBody = getTrimmedBody(functionString,startIndex);
+                const trimmedBody = getTrimmedBody(functionString, startIndex);
                 // Append to script, add semicolon at end if not present
-                result += trimmedBody + (trimmedBody[trimmedBody.length-1] == ';' ? '' : ';');
+                result += trimmedBody + (trimmedBody[trimmedBody.length - 1] == ';' ? '' : ';');
             }
             // Add the initializer function (if provided)
-            if(configuration.init != null){
-                if(typeof configuration.init != 'function')logError('Initalizer function is not a function.');
-                else{
+            if (configuration.init != null) {
+                if (typeof configuration.init != 'function') logError('Initalizer function is not a function.');
+                else {
                     const functionString = configuration.init.toString();
                     let startIndex = functionString.indexOf(')'); startIndex++;
                     while (functionString[startIndex] == '{' || functionString[startIndex] == '=' || functionString[startIndex] == '>' || functionString[startIndex] == ' ') startIndex++;
-                    result += 'window.onload=()=>{'+getTrimmedBody(functionString,startIndex)+'};';
+                    result += 'window.onload=()=>{' + getTrimmedBody(functionString, startIndex) + '};';
                 }
             }
-            result += '<'+'/script>';
+            result += '<' + '/script>';
             result += '</body>';
             result += '</html>';
             if (download) {

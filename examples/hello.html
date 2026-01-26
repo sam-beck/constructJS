@@ -56,7 +56,7 @@
         const btn = constructApp.create(
             'button',
             {
-                events: { click: click_event, blur: reset_event, focus:()=>console.log('hover')},
+                events: { click: click_event, blur: reset_event, focus:()=>console.log('Button focussed!')},
                 style: ['.mainStyle', { backgroundColor: 'pink', width: '40%', height: '20%' }]
             },
             'Press Me', 'btn'
@@ -75,6 +75,16 @@
         constructApp.appendChild(btn);
         // Append the text element to the button
         btn.appendChild(text);
+
+        // A test keyframe animation
+        constructApp.createAnimation('testAnimation',{'0%':{color:'black'},'100%':{color:'red'}});
+        // Apply the animation to the button, starts in 1/2 a second and repeats forever
+        btn.style.animation = 'testAnimation 1s ease-in-out 0.5s infinite alternate forwards';
+
+        // Another test keyframe animation
+        constructApp.createAnimation('testAnimation2',{'0%':{fontSize:'15px'},'100%':{fontSize:'30px'}});
+        // Apply the animation to the button, starts in 1/2 a second and repeats forever
+        text.style.animation = 'testAnimation2 1s ease-in-out 0.5s infinite alternate forwards';
 
         // Triggers when the page loads
         constructApp.setOnload(()=>{console.log('Page is loaded!')});
