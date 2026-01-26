@@ -250,7 +250,7 @@ function createConstructApp(title = 'ConstructJS Page') {
     }
     // Default class for constructJS element container
     const rootClass = document.createElement('style');
-    rootClass.textContent = '*,*::before,*::after{box-sizing:border-box;}body{margin:0px 0px;overflow:hidden;}';
+    rootClass.textContent = '*,*::before,*::after{box-sizing:border-box;}body{margin:0px 0px;}';
     document.head.appendChild(rootClass);
     // Root class definition, configurable via configuration.styles
     configuration.styles.addStyle('.constructJSRoot', { display: 'flex', width: '100vw', height: '100vh' });
