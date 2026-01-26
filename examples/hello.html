@@ -62,11 +62,15 @@
             'Press Me', 'btn'
         );
         
+        // Create a environment style variable (held in <html> tag)
+        constructApp.createVariable('color','red');
+
         // Test element
         const text = constructApp.create(
             'div',
             {
-                style: ['.mainStyle', { backgroundColor: 'white', margin: '5px', border: '2px solid red'}]
+                // Uses environment style variable color
+                style: ['.mainStyle', { backgroundColor: 'var(--color)', margin: '5px', border: '2px solid red'}]
             },
             'Hello!', 'text'
         );

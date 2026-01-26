@@ -245,6 +245,7 @@ function createConstructApp(title = 'ConstructJS Page') {
         styles: createStyleMap(),
         keyframes: createKeyframeMap(),
         elementNames: new Set(),
+        styleVariables: new Map(),
         onload: null
     }
     // Default class for constructJS element container
@@ -267,13 +268,30 @@ function createConstructApp(title = 'ConstructJS Page') {
         getRootClass: () => rootClass,
         getRoot: () => rootElement,
         appendChild: (element) => rootElement.appendChild(element),
+        getVariable: (name) => configuration.styleVariables.get(name),
+        createVariable: (name, data) => {
+            document.documentElement.style.setProperty('--' + name, data);
+            configuration.styleVariables.set(name, data);
+        },
+        setVariable: (name, data) => {
+            if(configuration.styleVariables.has(name)){
+                configuration.styleVariables.set(name, data);
+                document.documentElement.style.setProperty('--' + name, data);
+                return true;
+            }
+            return false;
+        },
+        removeVariable: (name) => {
+            document.documentElement.style.removeProperty('--' + name);
+            configuration.styleVariables.delete(name);
+        },
         addState: (name, initial) => {
             if (configuration.states.has(name)) return configuration.get(name);
             const state = createState(initial);
             configuration.states.set(name, state);
             return state;
         },
-        createAnimation: (name, config) =>  configuration.keyframes.create(name, config),
+        createAnimation: (name, config) => configuration.keyframes.create(name, config),
         getAnimations: () => configuration.keyframes.getKeyframes(),
         getAnimation: (name) => configuration.keyframes.getKeyframe(name),
         addStyle: (name, object) => {
@@ -400,14 +418,21 @@ function createConstructApp(title = 'ConstructJS Page') {
         export: (download = true, downloadTitle = null) => {
             let result = '<!DOCTYPE html>';
             const htmlElement = document.getElementsByTagName('html');
-            if (htmlElement.length > 0) result += '<html lang="' + htmlElement[0].lang + '">';
-            else result += '<html>';
+            result += htmlElement.length > 0 ? '<html lang="' + htmlElement[0].lang + '"' : '<html';
+            if(configuration.styleVariables.size > 0){
+                result += ' style="';
+                for(const [variable_name,variable] of configuration.styleVariables){
+                    result += '--'+variable_name+':'+variable+';';
+                }
+                result += '"';
+            }
+            result += '>';
             // Export head and merge stylesheets (in order)
             result += '<head>';
             result += charSet.outerHTML; result += metaElement.outerHTML; result += titleElement.outerHTML;
             result += '<style id="constructAnimations">';
             // Add Keyframes
-            for (const keyFrame of configuration.keyframes.getKeyframes().values())result += keyFrame.styleSheet.innerHTML;
+            for (const keyFrame of configuration.keyframes.getKeyframes().values()) result += keyFrame.styleSheet.innerHTML;
             result += '</style>'
             result += '<style id="constructStyles">';
             result += rootClass.innerHTML;
