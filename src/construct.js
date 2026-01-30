@@ -511,7 +511,7 @@ function createConstructApp(title = 'ConstructJS Page') {
                 // Gets the function body, stripping starting and ending parentheses
                 const functionBody = functionString.slice(startIndex, functionString[functionString.length - 1] == '}' ? functionString.length - 1 : functionString.length).trim();
                 // Finally, trims off the start and ending whitespace that JS automatically does for formatting in some cases
-                return functionBody.split('\n').map(line => line.trim()).join(' ');
+                return functionBody.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('//')).join(' ');
             }
             // Now define each and every function to be used, append this to result
             for (const ID of functionSet) {
