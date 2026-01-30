@@ -253,11 +253,11 @@ function createConstructApp(title = 'ConstructJS Page') {
     rootClass.textContent = '*,*::before,*::after{box-sizing:border-box;}body{margin:0px 0px;}';
     document.head.appendChild(rootClass);
     // Root class definition, configurable via configuration.styles
-    configuration.styles.addStyle('.constructJSRoot', { display: 'flex', width: '100vw', height: '100vh' });
-    configuration.styles.styleToCSS('.constructJSRoot');
+    configuration.styles.addStyle('#constructJSRoot', { display: 'flex', width: '100vw', height: '100vh' });
+    configuration.styles.styleToCSS('#constructJSRoot');
     // ConstructJS root element
     const rootElement = document.createElement('div');
-    rootElement.classList.add('constructJSRoot');
+    rootElement.setAttribute('id','constructJSRoot');
     document.body.appendChild(rootElement);
     configuration.root = rootElement;
 
@@ -304,10 +304,10 @@ function createConstructApp(title = 'ConstructJS Page') {
             configuration.styles.addToStyle(name, object, true);
         },
         addToRoot: (object) => {
-            configuration.styles.addToStyle('.constructJSRoot', object);
+            configuration.styles.addToStyle('#constructJSRoot', object);
         },
         setToRoot: (object) => {
-            configuration.styles.addToStyle('.constructJSRoot', object, true);
+            configuration.styles.addToStyle('#constructJSRoot', object, true);
         },
         addStyleToCSS: (name) => {
             configuration.styles.styleToCSS(name);
@@ -430,11 +430,11 @@ function createConstructApp(title = 'ConstructJS Page') {
             // Export head and merge stylesheets (in order)
             result += '<head>';
             result += charSet.outerHTML; result += metaElement.outerHTML; result += titleElement.outerHTML;
-            result += '<style id="constructAnimations">';
+            result += '<style id="constructJSAnimations">';
             // Add Keyframes
             for (const keyFrame of configuration.keyframes.getKeyframes().values()) result += keyFrame.styleSheet.innerHTML;
             result += '</style>'
-            result += '<style id="constructStyles">';
+            result += '<style id="constructJSStyles">';
             result += rootClass.innerHTML;
             for (const styleSheet of configuration.styles.getCssStyles().values()) result += styleSheet.innerHTML;
             result += '</style>';
