@@ -250,8 +250,12 @@ function createConstructApp(title = 'ConstructJS Page') {
     }
     // Default class for constructJS element container
     const rootClass = document.createElement('style');
-    rootClass.textContent = '*,*::before,*::after{box-sizing:border-box;}body{margin:0px 0px;}';
+    rootClass.textContent = '*,*::before,*::after{box-sizing:border-box;}';
     document.head.appendChild(rootClass);
+
+    configuration.styles.addStyle('body',{margin:'0px 0px'});
+    configuration.styles.styleToCSS('body');
+
     // Root class definition, configurable via configuration.styles
     configuration.styles.addStyle('.constructJSRoot', { display: 'flex', width: '100vw', height: '100vh' });
     configuration.styles.styleToCSS('.constructJSRoot');
@@ -303,6 +307,9 @@ function createConstructApp(title = 'ConstructJS Page') {
         },
         setToStyle: (name, object) => {
             configuration.styles.addToStyle(name, object, true);
+        },
+        addToBody: (object) => {
+            configuration.styles.addToStyle('body', object);
         },
         addToRoot: (object) => {
             configuration.styles.addToStyle('.constructJSRoot', object);
