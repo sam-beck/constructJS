@@ -417,7 +417,7 @@ function createConstructApp(title = 'ConstructJS Page') {
                 for (const child of children) {
                     element.appendChild(child);
                 }
-            } else {
+            } else if (children != null) {
                 element.innerHTML += children;
             }
             configuration.events.trigger("create", element);
